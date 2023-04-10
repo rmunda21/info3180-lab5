@@ -1,11 +1,19 @@
 <template>
   <form id="movieForm" @submit.prevent="saveMovie">
+    <div v-if="success || errors.length > 0">
+      <ul v-if="success">
+        <li>Successfully added movie</li>
+      </ul>
+      <ul v-else>
+        <li v-for="error in errors[0]">{{ error }}</li>
+      </ul>
+    </div>
     <div class="form-group mb-3">
       <label for="title" class="form-label">Movie Title</label>
       <input type="text" name="title" class="form-control" />
 
       <label for="desc" class="form-label">Movie Description</label>
-      <input type="text" name="desc" class="form-control" />
+      <textarea name="desc" class="form-control"></textarea>
 
       <label for="poster" class="form-label">Movie Poster</label>
       <input type="file" name="poster" class="form-control" />
@@ -16,6 +24,9 @@
 <script setup>
 import { ref, onMounted } from "vue";
 let crsf_token = ref("");
+
+let errors = ref([]);
+let success = ref(false);
 
 onMounted(() => {
   getCrsfToken();
@@ -43,10 +54,17 @@ let saveMovie = () => {
   })
     .then((resp) => resp.json())
     .then((data) => {
-      console.log(data);
+      // console.log(data);
+      if (data.errors) {
+        errors.value = [data.errors];
+      } else {
+        success.value = true;
+      }
     })
     .catch((error) => {
       console.log("FAILED");
     });
+  errors.value = [];
+  success.value = false;
 };
 </script>
