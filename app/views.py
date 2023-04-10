@@ -19,18 +19,30 @@ from .models import Movie
 # Routing for your application.
 ###
 
+def get_poster(filename):
+    return "http://127.0.0.1:8080/"+ os.path.join(app.config["STATIC_FOLDER"], secure_filename(filename))
+
+@app.route('/api/v1/movies', methods=["GET"])
+def get_movies():
+    raw_data = db.session.query(Movie).all()
+    data = list(map(lambda x: 
+        {
+            "id":x.id,
+            "title":x.title,
+            "description":x.description,
+            "poster":get_poster(x.poster)
+         }, raw_data))
+    return jsonify(data)
+
 @app.route('/api/v1/csrf-token', methods=['GET'])
 def get_csrf():
-    # return json.dumps({'csrf_token': generate_csrf()})
     return jsonify({'csrf_token': generate_csrf()})
 
 @app.route('/api/v1/movies', methods=['POST'])
 def save_movie():
-    print("OK")
     form = MovieForm()
     
     if form.validate_on_submit():
-        print("SUCCESSFUL")
         [title, desc, poster, token] = form
         path = os.path.join(app.config["UPLOAD_FOLDER"], secure_filename(poster.data.filename))
         poster.data.save(path)
@@ -49,7 +61,6 @@ def save_movie():
     else:
         form_error = form_errors(form)
         data = {"errors" : form_error}
-        print(jsonify(data))
         return json.dumps(data)
     
 @app.route('/')

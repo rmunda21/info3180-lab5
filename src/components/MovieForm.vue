@@ -54,7 +54,6 @@ let saveMovie = () => {
   })
     .then((resp) => resp.json())
     .then((data) => {
-      // console.log(data);
       if (data.errors) {
         errors.value = [data.errors];
       } else {
